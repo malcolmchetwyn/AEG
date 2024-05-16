@@ -16,13 +16,13 @@ class EventHub:
         print(f"Event published: {event}")
 
 class IdentityProvider:
-    def authenticate(self, auth_token: str) -> bool:
-        # Simulate token-based authentication
-        return auth_token == "valid-token"
+    def authenticate(self, auth_token: str) -> str:
+        # Simulate token-based authentication and return user_id
+        return "user_id" if auth_token == "valid-token" else None
 
 class DataEnrichmentService:
     def enrich(self, customer_data: Dict[str, Any]) -> Dict[str, Any]:
-        # Simulate data enrichment process ... ...
+        # Simulate data enrichment process
         customer_data["enriched"] = True
         return customer_data
 
@@ -59,14 +59,14 @@ class CLMSystem:
         # GRP-GUARDRAIL-01: Defined and Versioned Schema
         event['customer_id'] = customer_id
         event['event_id'] = str(uuid.uuid4())
-        event['version'] = "1.0.0"  # Add versioning information ... ...
+        event['version'] = "1.0.0"  # Add versioning information
         event_store.append(event)
         await self.event_hub.publish(event)
         return event
 
     async def register_customer(self, customer_data: Dict[str, Any]):
-        # CLM-GUARDRAIL-01: Customer Event Creation ..
-        # CLM-GUARDRAIL-03: Compliance Rules ..
+        # CLM-GUARDRAIL-01: Customer Event Creation
+        # CLM-GUARDRAIL-03: Compliance Rules
         # CLM-GUARDRAIL-04: Data Enrichment
         # GRP-GUARDRAIL-03: Customer Master Data Management
         # Enrich customer data

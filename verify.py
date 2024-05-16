@@ -9,8 +9,10 @@ load_dotenv()
 
 # Ensure the API key is set in the environment
 openai.api_key = os.getenv("OPENAI_API_KEY")
+print(f"Using OpenAI API key: {openai.api_key}")
 
 async def async_openai_call(prompt):
+    print("Calling OpenAI API...")
     client = AsyncOpenAI()
     response = await client.chat.completions.create(
         model="gpt-4o",

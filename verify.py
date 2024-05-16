@@ -17,7 +17,7 @@ async def async_openai_call(prompt):
         messages=[
             {
                 "role": "system",
-                "content": "You are a helpful Enterprise Architect called Ruth."
+                "content": "You are a helpful Enterprise Architect called Ruth. Ensure the code adheres to the provided patterns and guardrails."
             },
             {"role": "user", "content": prompt}
         ]

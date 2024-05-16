@@ -3,6 +3,7 @@
 import subprocess
 import asyncio
 import os
+import json
 from verify import main as verify_with_openai
 from dotenv import load_dotenv
 
@@ -37,18 +38,32 @@ async def validate_with_openai():
     prompt = (
         f"Patterns and Guardrails:\n{patterns_guardrails}\n\n"
         f"Target State Patterns:\n{target_patterns}\n\n"
-        f"Code to be validated:\n{code}"
+        f"Code to be validated:\n{code}\n\n"
+        "Respond in a structured JSON format with fields 'status' and 'description'."
     )
+
+    print(f"Prompt sent to OpenAI:\n{prompt}")
 
     # Send the prompt to OpenAI and get the response
     response = await verify_with_openai(prompt)
     print("OpenAI Validation Response:", response)
 
-    if "fail" in response.lower():
-        print("Pre-commit checks failed based on OpenAI validation.")
+    # Parse the JSON response
+    try:
+        response_json = json.loads(response)
+        status = response_json.get("status", "").lower()
+        description = response_json.get("description", "")
+        print(f"Status: {status}, Description: {description}")
+        if status == "pass":
+            print("OpenAI validation passed")
+            return True
+        else:
+            print(f"Pre-commit checks failed based on OpenAI validation: {description}")
+            return False
+    except json.JSONDecodeError as e:
+        print(f"Failed to decode OpenAI response: {e}")
+        print("Pre-commit checks failed due to invalid response format.")
         return False
-    print("OpenAI validation passed")
-    return True
 
 if __name__ == "__main__":
     print("Pre-commit hook started")

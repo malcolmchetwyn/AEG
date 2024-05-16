@@ -50,7 +50,7 @@ class CLMSystem:
         return event
 
     async def register_customer(self, customer_data: Dict[str, Any]):
-        # CLM-GUARDRAIL-01: Customer Event Creation
+        # CLM-GUARDRAIL-01: Customer Event Creation ..
         # CLM-GUARDRAIL-03: Compliance Rules
         # CLM-GUARDRAIL-04: Data Enrichment
         # GRP-GUARDRAIL-03: Customer Master Data Management

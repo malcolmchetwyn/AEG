@@ -1,0 +1,157 @@
+### Target State Patterns
+
+#### GRP-PATTERN-01: API Gateway
+
+**Problem:**
+How to connect multiple clients in different networks to multiple services ensuring security, traceability, and a standard entry point.
+
+**Context:**
+The CLM solution requires integration with multiple different services that are exposed over varying protocols, in different network segments using many different underlying technologies.
+
+**Competing Goals:**
+The API gateway will itself become critical infrastructure hence must be highly available and reliable. Key relevant goal in this context is maintainability of the consumers, as measured by time to integrate.
+
+**Interactions:**
+The API Gateway will typically integrate directly with Identity and Access Management systems to ensure common authentication of clients and the application of any authorization and access rules. To support operations the API Gateway will be integrated with Telemetry in order to support observability across all interactions.
+
+**Solution:**
+The API Gateway becomes a single-entry point for all clients; some requests are proxied, others are distributed to multiple upstream endpoints. The API gateway is the gatekeeper for access to APIs, securing and managing traffic between API consumers and the applications that expose those APIs. The API gateway typically handles authentication and authorization, request routing to backends, rate limiting to avoid overloading systems, and handling errors or exceptions.
+
+**Consequences:**
+While the API Gateway will increase both systems complexity by requiring additional components and increased network response times due to the additional network hops it provides several significant benefits:
+- Insulates clients from how the upstream application is configured and deployed
+- Shields clients from the problem of determining the locations of service instances
+- Simplifies clients by moving logic for calling multiple services from the client to the API gateway
+- Provides a common mechanism for observability and the application of telemetry
+- Segments untrusted network segments
+
+**Known Uses:**
+Open Banking (Kong API Gateway)
+
+**Category:**
+API Management
+
+---
+
+#### GRP-PATTERN-02: Event Sourcing
+
+**Problem:**
+With changes to Customer data it is essential to determine the current state, it is also necessary to understand how the current state was attained with all the events that have occurred.
+
+**Context:**
+Event Sourcing ensures that all changes to Customer state are stored as a sequence of imperative events. For Customer state this ensures traceability as well as providing a means to determine the current state. Each event describes the action performed to the data prior to persistence; each of the events represents a set of changes to the data.
+
+**Competing Goals:**
+Deriving the current state from a series of events is time-consuming, so a consistent checkpoint of the current state can be maintained.
+
+**Interactions:**
+All applications mutating Customer state must publish state changes. Any application wishing to perform actions based on Customer State Events can subscribe to the event stream, specifically this will trigger CLM processes to execute.
+
+**Solution:**
+The Event Sourcing pattern ensures that every change to the state of an Entity is captured including the fields to support audit of changes. The events are themselves stored in the sequence they were applied for the same lifetime as the Customer state itself.
+
+**Consequences:**
+The event sourcing pattern raises the idea that the overall CLM system will become a composition of choreographed events, that are loosely-coupled enabling scalability and resilience. It enables new applications to be added easily by tapping into the event streams and populating their own models, which don't need to be the same for all systems.
+
+**Known Uses:**
+CLM
+
+**Category:**
+State Management
+
+---
+
+#### GRP-PATTERN-03: Message Translator
+
+**Problem:**
+Systems requiring multiple applications and third-parties may use diverse data models, standards, and different data formats. Even where a common canonical model is used within a single organization, it may not be possible or desirable for third parties to adopt the same model.
+
+**Context:**
+The Message Translator pattern acts as a special filter between applications translating data from one format to another. In addition to the proprietary data models and data formats incorporated in the various applications, integration solutions often interact with standardized data formats that seek to be independent from specific applications.
+
+**Competing Goals:**
+Maintaining the correct mapping between different data models can be time-consuming and ensuring correct representation may involve distributing business logic across components.
+
+**Interactions:**
+Any application where the format or data model is different from the desired endpoint.
+
+**Solution:**
+The Message Translator is the message equivalent of the Adapter pattern (GoF). The message translator pattern acts as a specific filter between other filters or applications and translates data from one format to another.
+
+**Consequences:**
+The message translator is a custom filter that must be maintained as the different data models evolve over time.
+
+**Known Uses:**
+CLM
+
+**Category:**
+Canonical Model
+
+---
+
+#### GRP-PATTERN-04: Federated Identity
+
+**Problem:**
+CLM requires integration with multiple services and applications which may be hosted by different organizations. Having separate identities may cause a disjointed user experience, expose security vulnerabilities, and complicate user management.
+
+**Context:**
+Delegate authentication to an Identity Provider. This can simplify development, minimize the requirement for user administration, and improve the user experience of the application.
+
+**Competing Goals:**
+Authentication as a single point of failure. Deploying your identity management mechanism to the same Data Centers to maintain application reliability and availability.
+
+**Interactions:**
+Any client interacting with CLM must be authenticated and authorized to do so. The ultimate identity will be traced and audited even where it is delegated via the use of service accounts.
+
+**Solution:**
+Consequences:
+- IGA service will be the authoritative source for managing Identities and their access and will manage the Identity Data Sets contained in the Group’s Directory Services.
+- SSO will authenticate the user, perform coarse-grained authorization, and then issue the token in the agreed format and with the agreed contents.
+- Coarse-Grained authorization is defined to authenticate user have accessing the CLM.
+- Fenergo SaaS is able to consume a SAML2 Assertion token issued by Group Identity Services
+- Identities managed by IGA will be sourced from an Authoritative Source, without modification of the data contained in that source, and with full trust that the data is complete.
+- Compliance reports for Governance and Assurance will be generated within IGA service for directories and applications under management.
+- The IGA service will be used to control lifecycle of accounts, request changes in access, password synchronization, and user access reviews.
+- Solution will proactively prevent unauthorized access to Group CLM and ensure that the processes providing access entitlements are complete, consistent and auditable
+
+**Known Uses:**
+CLM, Integration RA, Group Ops
+
+**Category:**
+Identity & Access Management
+
+---
+
+#### GRP-PATTERN-05: High-Availability
+
+**Problem:**
+CLM requires a highly-available architecture where downtime will be under one hour per year in order to meet existing requirements.
+
+**Context:**
+The strategic goal of CLM is to provide common processes and rules for Customer lifecycle journeys which brings a dependency for all channels, customers, and operations teams managing customer data. Any outage in the CLM service will have a profound effect on all of these channels and teams.
+
+**Competing Goals:**
+Provision of high-availability will bring an additional cost and complexity to the overall solution where multiple instances must be maintained and synchronized.
+
+**Interactions:**
+The target state foresees that CLM will be a managed service deployed to AWS infrastructure. This requires that not only will additional instances of the service and underlying database need to be replicated across multiple availability zones, but network infrastructure will be need to be configured in order to support multiple underlying instances, including the connections to leveraged services.
+
+**Solution:**
+The solution is to deploy a highly available architecture deployed to multiple availability zones ensuring that the following are considered:
+- Data Backups, Recovery and Replication
+- Clustering
+- Network Load Balancing
+- Fail-Over Solutions
+- Geographic Redundancy (where legally applicable and possible)
+- Failure Modes (non-binary failure of service and temporary outages)
+- Operational deployment
+
+**Consequences:**
+Despite the fact that applying the best practices for high availability is essentially planning for failure; there are other actions an organization can take to increase their preparedness in the event of a system failure leading to downtime. Organizations should keep failure or resource consumption data that can be used to isolate problems and analyze trends.
+
+**Known Uses:**
+CLM
+
+**Category:**
+Resiliency
+

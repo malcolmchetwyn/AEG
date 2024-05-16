@@ -1,0 +1,340 @@
+### Patterns & Guardrails
+
+#### Target State Patterns
+
+##### GRP-PATTERN-01: API Gateway
+
+**Problem:**
+How to connect multiple clients in different networks to multiple services ensuring security, traceability, and a standard entry point.
+
+**Context:**
+The CLM solution requires integration with multiple different services that are exposed over varying protocols, in different network segments using many different underlying technologies.
+
+**Competing Goals:**
+The API gateway will itself become critical infrastructure hence must be highly available and reliable. Key relevant goal in this context is maintainability of the consumers, as measured by time to integrate.
+
+**Interactions:**
+The API Gateway will typically integrate directly with Identity and Access Management systems to ensure common authentication of clients and the application of any authorization and access rules. To support operations the API Gateway will be integrated with Telemetry in order to support observability across all interactions.
+
+**Solution:**
+The API Gateway becomes a single-entry point for all clients; some requests are proxied, others are distributed to multiple upstream endpoints. The API gateway is the gatekeeper for access to APIs, securing and managing traffic between API consumers and the applications that expose those APIs. The API gateway typically handles authentication and authorization, request routing to backends, rate limiting to avoid overloading systems, and handling errors or exceptions.
+
+**Consequences:**
+While the API Gateway will increase both systems complexity by requiring additional components and increased network response times due to the additional network hops it provides several significant benefits:
+- Insulates clients from how the upstream application is configured and deployed
+- Shields clients from the problem of determining the locations of service instances
+- Simplifies clients by moving logic for calling multiple services from the client to the API gateway
+- Provides a common mechanism for observability and the application of telemetry
+- Segments untrusted network segments
+
+**Known Uses:**
+Open Banking (Kong API Gateway)
+
+**Category:**
+API Management
+
+---
+
+##### GRP-PATTERN-02: Event Sourcing
+
+**Problem:**
+With changes to Customer data it is essential to determine the current state, it is also necessary to understand how the current state was attained with all the events that have occurred.
+
+**Context:**
+Event Sourcing ensures that all changes to Customer state are stored as a sequence of imperative events. For Customer state this ensures traceability as well as providing a means to determine the current state. Each event describes the action performed to the data prior to persistence; each of the events represents a set of changes to the data.
+
+**Competing Goals:**
+Deriving the current state from a series of events is time-consuming, so a consistent checkpoint of the current state can be maintained.
+
+**Interactions:**
+All applications mutating Customer state must publish state changes. Any application wishing to perform actions based on Customer State Events can subscribe to the event stream, specifically this will trigger CLM processes to execute.
+
+**Solution:**
+The Event Sourcing pattern ensures that every change to the state of an Entity is captured including the fields to support audit of changes. The events are themselves stored in the sequence they were applied for the same lifetime as the Customer state itself.
+
+**Consequences:**
+The event sourcing pattern raises the idea that the overall CLM system will become a composition of choreographed events, that are loosely-coupled enabling scalability and resilience. It enables new applications to be added easily by tapping into the event streams and populating their own models, which don't need to be the same for all systems.
+
+**Known Uses:**
+CLM
+
+**Category:**
+State Management
+
+---
+
+##### GRP-PATTERN-03: Message Translator
+
+**Problem:**
+Systems requiring multiple applications and third-parties may use diverse data models, standards, and different data formats. Even where a common canonical model is used within a single organization, it may not be possible or desirable for third parties to adopt the same model.
+
+**Context:**
+The Message Translator pattern acts as a special filter between applications translating data from one format to another. In addition to the proprietary data models and data formats incorporated in the various applications, integration solutions often interact with standardized data formats that seek to be independent from specific applications.
+
+**Competing Goals:**
+Maintaining the correct mapping between different data models can be time-consuming and ensuring correct representation may involve distributing business logic across components.
+
+**Interactions:**
+Any application where the format or data model is different from the desired endpoint.
+
+**Solution:**
+The Message Translator is the message equivalent of the Adapter pattern (GoF). The message translator pattern acts as a specific filter between other filters or applications and translates data from one format to another.
+
+**Consequences:**
+The message translator is a custom filter that must be maintained as the different data models evolve over time.
+
+**Known Uses:**
+CLM
+
+**Category:**
+Canonical Model
+
+---
+
+##### GRP-PATTERN-04: Federated Identity
+
+**Problem:**
+CLM requires integration with multiple services and applications which may be hosted by different organizations. Having separate identities may cause a disjointed user experience, expose security vulnerabilities, and complicate user management.
+
+**Context:**
+Delegate authentication to an Identity Provider. This can simplify development, minimize the requirement for user administration, and improve the user experience of the application.
+
+**Competing Goals:**
+Authentication as a single point of failure. Deploying your identity management mechanism to the same Data Centers to maintain application reliability and availability.
+
+**Interactions:**
+Any client interacting with CLM must be authenticated and authorized to do so. The ultimate identity will be traced and audited even where it is delegated via the use of service accounts.
+
+**Solution:**
+Consequences:
+- IGA service will be the authoritative source for managing Identities and their access and will manage the Identity Data Sets contained in the Group’s Directory Services.
+- SSO will authenticate the user, perform coarse-grained authorization, and then issue the token in the agreed format and with the agreed contents.
+- Coarse-Grained authorization is defined to authenticate user have accessing the CLM.
+- Fenergo SaaS is able to consume a SAML2 Assertion token issued by Group Identity Services
+- Identities managed by IGA will be sourced from an Authoritative Source, without modification of the data contained in that source, and with full trust that the data is complete.
+- Compliance reports for Governance and Assurance will be generated within IGA service for directories and applications under management.
+- The IGA service will be used to control lifecycle of accounts, request changes in access, password synchronization, and user access reviews.
+- Solution will proactively prevent unauthorized access to Group CLM and ensure that the processes providing access entitlements are complete, consistent and auditable
+
+**Known Uses:**
+CLM, Integration RA, Group Ops
+
+**Category:**
+Identity & Access Management
+
+---
+
+##### GRP-PATTERN-05: High-Availability
+
+**Problem:**
+CLM requires a highly-available architecture where downtime will be under one hour per year in order to meet existing requirements.
+
+**Context:**
+The strategic goal of CLM is to provide common processes and rules for Customer lifecycle journeys which brings a dependency for all channels, customers, and operations teams managing customer data. Any outage in the CLM service will have a profound effect on all of these channels and teams.
+
+**Competing Goals:**
+Provision of high-availability will bring an additional cost and complexity to the overall solution where multiple instances must be maintained and synchronized.
+
+**Interactions:**
+The target state foresees that CLM will be a managed service deployed to AWS infrastructure. This requires that not only will additional instances of the service and underlying database need to be replicated across multiple availability zones, but network infrastructure will be need to be configured in order to support multiple underlying instances, including the connections to leveraged services.
+
+**Solution:**
+The solution is to deploy a highly available architecture deployed to multiple availability zones ensuring that the following are considered:
+- Data Backups, Recovery and Replication
+- Clustering
+- Network Load Balancing
+- Fail-Over Solutions
+- Geographic Redundancy (where legally applicable and possible)
+- Failure Modes (non-binary failure of service and temporary outages)
+- Operational deployment
+
+**Consequences:**
+Despite the fact that applying the best practices for high availability is essentially planning for failure; there are other actions an organization can take to increase their preparedness in the event of a system failure leading to downtime. Organizations should keep failure or resource consumption data that can be used to isolate problems and analyze trends.
+
+**Known Uses:**
+CLM
+
+**Category:**
+Resiliency
+
+---
+
+#### Target State Guardrails
+
+##### CLM-GUARDRAIL-01: CLM will generate a Customer event indicating when a designated service can be created.
+
+**Applicability:**
+CLM Solution Architects, External to CLM Solution Architects
+
+**Context:**
+As CLM is the single solution to manage the customer lifecycle via the defined processes and rules, the CLM application will manage all customer lifecycle events and the consequent customer state changes. The successful outcome of a customer onboarding or maintenance process is the customer state transitioning to reflect “authorized to trade” and hence the customer is now eligible for product onboarding. This state is only achieved after the execution of the required CLM processes, rules, and tasks.
+
+**Expectation:**
+The following is expected from Solution Architects prior to requesting endorsement of the architectural decisions related to the implementation of new Business Services or replacement of the Applications and Technology Components implementing existing Business Services:
+- Verify that the customer state is recorded as ”authorized to trade” prior to creating any designated service (operational account).
+- Ensure that all Customer state changes are persisted to the CLM Process Data Repository.
+- Ensure that any Customer state changes are propagated via the Event Hub for consumption by external systems and services.
+- Ensure that the authoritative data store, the Customer Master in SAP BP, reflects the Customer state as managed in CLM.
+
+**Exceptions:**
+None
+
+**References:**
+CLM RA, Customer MDM  
+
+**Category
+
+:**
+Customer State
+
+---
+
+##### CLM-GUARDRAIL-02: Clients integrate to the CLM solution via the Published API
+
+**Applicability:**
+CLM Solution Architects, External to CLM Solution Architects
+
+**Context:**
+The CLM solution exposes an API to be consumed by clients who wish to interact with Processes, Cases, and Tasks. Any client connecting to CLM must invoke the API in order to access CLM features and data. No direct access to the underlying domain data store will be permitted. As the CLM solution is to be managed as a Software as a Service solution, all interactions must remain loosely-coupled, all service interfaces, without exception, must be designed from the ground up to be externalizable. The solution must be designed to be able to expose CLM functionality to other services and applications.
+
+**Expectation:**
+The following is expected from Solution Architects prior to requesting endorsement of the architectural decisions related to the implementation of new Business Services or replacement of the Applications and Technology Components implementing existing Business Services:
+- Review the existing published APIs
+- Validate that the existing API payload conforms to the Business Requirements
+- All changes to a published API must go through an API version management process
+
+**Exceptions:**
+None
+
+**References:**
+CLM RA, OneCloud Gen2  
+
+**Category:**
+API
+
+---
+
+##### CLM-GUARDRAIL-03: CLM masters all customer Financial Crimes Compliance Obligation and Regulatory rules and processes for Customer & Counterparty Onboarding, Maintenance and Offboarding
+
+**Applicability:**
+Business Analysts, CLM Solution Architects, External to CLM Solution Architects  
+
+**Context:**
+The CLM solution provides a common framework for defining business rules used to describe obligations and regulations to be applied to Customers during onboarding, maintenance, and offboarding. These rules are defined and managed via a workbench tool and it is these tools that are versioned and published to be executed by the Business Rules Engine (BRE). Processes are also defined and managed via a workbench tool. No onboard, or customer maintenance compliance rules or processes are to be embedded into channel systems.
+
+**Expectation:**
+The following is expected from Solution Architects and Business Analysts prior to requesting endorsement of the solution architecture for Customer & Counterparty Onboarding, Maintenance and Offboarding rules:
+- Are the rules defined in the standard Domain Specific Language (DSL) used to describe all business rules for regulations and obligations
+- All decisions tables are defined and created in a format that may be directly utilized by the BRE
+- This precludes the development of rules in channel applications that override the underlying CLM rules
+- Use the provided CLM process definition tool where processes are required to be modified
+
+**Exceptions:**
+None
+
+**References:**
+CLM RA, Drools, Fenergo  
+
+**Category:**
+Rules
+
+---
+
+##### CLM-GUARDRAIL-04: All External customer data enrichment and verification services is managed by CLM
+
+**Applicability:**
+External to CLM Solution Architects, Solution Architects  
+
+**Context:**
+The validation and enrichment of customer data from external sources is the responsibility of CLM. This means that all integration points to gather external customer data for the purposes of KYC will be coordinated and managed by the CLM solution.
+
+**Expectation:**
+No channel will integrate directly for external customer data with an external source. The following is expected from Solution Architects prior to requesting endorsement of the architectural decisions related to the implementation of new external customer data integration services for CLM:
+- Seek open standards for integration contracts
+- Prefer open standards where integration solutions already exist
+- Where existing external data is not captured by CLM extend the CLM process of integration
+
+**Exceptions:**
+None
+
+**References:**
+CBA Architecture Framework, OneCloud Gen2, Target State Principle – Defined Interfaces  
+
+**Category:**
+Integration
+
+---
+
+##### GRP-GUARDRAIL-01: The solution will publish events that must conform to a defined and versioned Schema
+
+**Applicability:**
+Solution Architects
+
+**Context:**
+The CLM solution will generate multiple Customer Events as the Customer state changes throughout the Customer lifecycle processes or journeys. These events will be published onto the Apache Kafka based Event Hub infrastructure. As the CLM solution has a Domain Data Store and is not the Golden Source of Customer Data these events will be consumed by the Customer Master solution; other processes wishing to react to Customer lifecycle events may also subscribe to these events. Architects need to consider the process of dealing with changes to database structures and keeping schemas compatible, this is an important aspect of data management.
+
+**Expectation:**
+The following is expected from Solution Architects prior to requesting endorsement of the architectural decisions related to the implementation of CLM Events:
+- The events generated by CLM will conform to a defined Canonical Model within the bounded context of CLM
+- The message schema for the events generated by CLM must adhere to the existing language-neutral schema and these schemas will be versioned
+- Message event content will include the version of the CLM events that are being published
+- All events should aim for full compatibility where both backwards and forwards compatibility is supported with previous versions of the schema
+
+**Exceptions:**
+None
+
+**References:**
+CLM RA, OneCloud Gen2, Common Integration Guardrails  
+
+**Category:**
+Schema Evolution
+
+---
+
+##### GRP-GUARDRAIL-02: Isolate against service failures
+
+**Applicability:**
+Solution Architects
+
+**Context:**
+CLM is a solution relying heavily on integration to multiple external services the availability of any one of these services can have a profound impact on the availability and stability of the whole system.
+
+**Expectation:**
+The CLM solution is intended to be a choreographed series of events that implement the required obligations and regulations for customers. As this state machine is event-driven, each event should be loosely-coupled, enabling service failure, performance degradation, or maintenance (service outage) to allow service continuity for the connected channels. It is expected that Solutions Architects will review the following resiliency considerations prior to requesting endorsement of the architectural decisions:
+- Consider service degradation and fallback/failover options
+- Asynchronous dependencies on external services where applicable
+- How to support resiliency against intermittent and transient issues with connectivity
+
+**Exceptions:**
+None
+
+**References:**
+CLM RA, Common Integration Guardrails  
+
+**Category:**
+Integration Standards
+
+---
+
+##### GRP-GUARDRAIL-03: Customer Master Data Management
+
+**Applicability:**
+Solution Architects
+
+**Context:**
+CLM is a solution relying heavily on integration to multiple external services and will leverage the Group Customer Master Data Management architectural principles.
+
+**Expectation:**
+The CLM solution is not the authoritative data source for Customer data. It is expected that Solutions Architects will review the following data management considerations prior to requesting endorsement of the architectural decisions:
+- CLM will treat the Group Customer Master as the authoritative data source but will always have a copy of core customer data elements in CLM, this requires that CLM subscribes to the customer profile changes in Group Customer Master through the group Event Hub.
+- CLM will integrate into a Group endorsed solution for enriching, validating, and verifying Customer Data against third party data aggregator or providers. This integration will be both online and batch or real-time notification of the customer updates such as associations or business address.
+- CLM will have a process of loading Group Reference Data (GRD) and have an ongoing control to ensure the data is in sync with GRD, this will include reference data such as Country Codes, Entity Types, Product Metadata (groups, category, type, sub-type…) that would reside in the GRD.
+
+**Exceptions:**
+None
+
+**References:**
+Group Master Data Management Architectural Principles, CLM RA  
+
+**Category:**
+Master Data Management

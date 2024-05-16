@@ -197,13 +197,12 @@ async def main():
             'customer_id': '12345',
             'name': 'John Doe',
             'email': 'john.doe@example.com',
-            'authorized_to_trade': True,  # Adding this field to simulate authorization
+            'authorized_to_trade': True,  # Adding this field to simulate authorization ok
             'complies_with_standards': True  # Adding this field to simulate standards compliance
         }
     }
 
     response = await clm_system.process_api_request(api_request)
-    print(json.dumps(response, indent=4))
 
 # Run the main function
 asyncio.run(main())

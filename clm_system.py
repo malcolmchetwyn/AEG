@@ -59,7 +59,7 @@ class CLMSystem:
         # GRP-GUARDRAIL-01: Defined and Versioned Schema
         event['customer_id'] = customer_id
         event['event_id'] = str(uuid.uuid4())
-        event['version'] = "1.0.0"  # Add versioning information ...
+        event['version'] = "1.0.0"  # Add versioning information ... ...
         event_store.append(event)
         await self.event_hub.publish(event)
         return event

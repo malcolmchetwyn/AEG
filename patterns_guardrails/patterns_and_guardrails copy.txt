@@ -161,6 +161,34 @@ Resiliency
 
 #### Target State Guardrails
 
+##### CLM-GUARDRAIL-01: CLM will generate a Customer event indicating when a designated service can be created.
+
+**Applicability:**
+CLM Solution Architects, External to CLM Solution Architects
+
+**Context:**
+As CLM is the single solution to manage the customer lifecycle via the defined processes and rules, the CLM application will manage all customer lifecycle events and the consequent customer state changes. The successful outcome of a customer onboarding or maintenance process is the customer state transitioning to reflect “authorized to trade” and hence the customer is now eligible for product onboarding. This state is only achieved after the execution of the required CLM processes, rules, and tasks.
+
+**Expectation:**
+The following is expected from Solution Architects prior to requesting endorsement of the architectural decisions related to the implementation of new Business Services or replacement of the Applications and Technology Components implementing existing Business Services:
+- Verify that the customer state is recorded as ”authorized to trade” prior to creating any designated service (operational account).
+- Ensure that all Customer state changes are persisted to the CLM Process Data Repository.
+- Ensure that any Customer state changes are propagated via the Event Hub for consumption by external systems and services.
+- Ensure that the authoritative data store, the Customer Master in SAP BP, reflects the Customer state as managed in CLM.
+
+**Exceptions:**
+None
+
+**References:**
+CLM RA, Customer MDM  
+
+**Category
+
+:**
+Customer State
+
+---
+
 ##### CLM-GUARDRAIL-02: Clients integrate to the CLM solution via the Published API
 
 **Applicability:**
@@ -183,6 +211,32 @@ CLM RA, OneCloud Gen2
 
 **Category:**
 API
+
+---
+
+##### CLM-GUARDRAIL-03: CLM masters all customer Financial Crimes Compliance Obligation and Regulatory rules and processes for Customer & Counterparty Onboarding, Maintenance and Offboarding
+
+**Applicability:**
+Business Analysts, CLM Solution Architects, External to CLM Solution Architects  
+
+**Context:**
+The CLM solution provides a common framework for defining business rules used to describe obligations and regulations to be applied to Customers during onboarding, maintenance, and offboarding. These rules are defined and managed via a workbench tool and it is these tools that are versioned and published to be executed by the Business Rules Engine (BRE). Processes are also defined and managed via a workbench tool. No onboard, or customer maintenance compliance rules or processes are to be embedded into channel systems.
+
+**Expectation:**
+The following is expected from Solution Architects and Business Analysts prior to requesting endorsement of the solution architecture for Customer & Counterparty Onboarding, Maintenance and Offboarding rules:
+- Are the rules defined in the standard Domain Specific Language (DSL) used to describe all business rules for regulations and obligations
+- All decisions tables are defined and created in a format that may be directly utilized by the BRE
+- This precludes the development of rules in channel applications that override the underlying CLM rules
+- Use the provided CLM process definition tool where processes are required to be modified
+
+**Exceptions:**
+None
+
+**References:**
+CLM RA, Drools, Fenergo  
+
+**Category:**
+Rules
 
 ---
 

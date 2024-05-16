@@ -41,7 +41,8 @@ async def validate_with_openai():
         f"Code to be validated:\n{code}\n\n"
         """
         If the code adheres to the guardrails and standards return "pass" in the status field.
-        If the code does not adhere to the guardrails and standards return "fail" in the status field and populate the description field with the reason.
+        
+        If the code does not adhere to the guardrails and standards return "fail" in the status field and populate the description field with the reason. If failed you must provide the pattern referecne number(s), guardail referecne number(s) or standard(s) referecne number
 
         DO NOT RESPOND WITH ```json in the payload
 

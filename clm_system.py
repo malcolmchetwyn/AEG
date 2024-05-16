@@ -55,7 +55,7 @@ class CLMSystem:
         # CLM-GUARDRAIL-04: Data Enrichment
         # GRP-GUARDRAIL-03: Customer Master Data Management
         # Enrich customer data
-        enriched_data = self.data_enrichment_service.enrich(customer_data)
+        #enriched_data = self.data_enrichment_service.enrich(customer_data)
         customer_id = enriched_data['customer_id']
         customer_db[customer_id] = enriched_data
 

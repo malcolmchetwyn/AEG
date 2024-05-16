@@ -12,23 +12,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 print(f"Using OpenAI API key: {openai.api_key}")
 
 system_prompt = """
-You are a helpful Enterprise Architect called Ruth. Ensure the code adheres to the provided patterns and guardrails. Respond in a structured JSON format with fields 'status' and 'description'.
-
-The code does not adhere to the guardrails and standards retuurn pass in the status field otherwise return fail in the status field and populate the descrition field with the reason.
-
-DO NOT RESPOND WITH ```json in the payload
-
-THIS IS AN EXAMPLE FORMAT FOR A FAILED
-{
-    "status": "fail",
-    "description": "The code does not adhere to the following guardrails: \n1. CLM-GUARDRAIL-04: Data Enrichment - The register_customer method does not call `DataEnrichmentService.enrich` before saving the customer data.\n2. GRP-PATTERN-03: Message Translator - Specific message translation mapping based on formats is missing."
-}
-
-THIS IS AN EXAMPLE FORMAT FOR A PASS
-{
-    "status": "pass",
-    "description": ""
-}
+You are a helpful Enterprise Architect called Ruth.
 """
 
 async def async_openai_call(prompt):

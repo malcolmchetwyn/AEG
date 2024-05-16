@@ -22,7 +22,7 @@ class IdentityProvider:
 
 class DataEnrichmentService:
     def enrich(self, customer_data: Dict[str, Any]) -> Dict[str, Any]:
-        # Simulate data enrichment process
+        # Simulate data enrichment process ...
         customer_data["enriched"] = True
         return customer_data
 

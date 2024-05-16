@@ -48,6 +48,9 @@ async def validate_with_openai():
     response = await verify_with_openai(prompt)
     print("OpenAI Validation Response:", response)
 
+    # Clean the response to remove backticks and newlines
+    response = response.strip('```json\n').strip('\n```')
+
     # Parse the JSON response
     try:
         response_json = json.loads(response)

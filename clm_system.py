@@ -28,7 +28,7 @@ class DataEnrichmentService:
 
 class BusinessRulesEngine:
     def apply_compliance_rules(self, customer_data: Dict[str, Any]) -> bool:
-        # Simulate applying compliance rules
+        # Simulate applying compliance rules ..
         # Here we assume that compliance rules are met if the customer's name is not empty
         return bool(customer_data.get("name"))
 

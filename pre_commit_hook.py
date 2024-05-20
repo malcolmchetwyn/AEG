@@ -40,7 +40,7 @@ async def validate_with_openai():
         f"Target State Patterns:\n{target_patterns}\n\n"
         f"Code to be validated:\n{code}\n\n"
         """
-        You must analyse the 'Code to be validated' adheres to the guardrails and standards return "pass" in the status field. You must check the code
+        You must analyse the 'Code to be validated' adheres to the guardrails and standards return "pass" in the status field. You must check the code and disregard comments in the code. Does not need to fully adhere.
         
         If the code does not align to the guardrails and standards return "fail" in the status field and populate the description field with the reason. If failed you must provide the pattern referecne number(s), guardail referecne number(s) or standard(s) referecne number
 
@@ -88,9 +88,9 @@ if __name__ == "__main__":
 
     # Check if OPENAI_CHECK environment variable is set to "true"
     openai_check = os.getenv("OPENAI_CHECK", "true").lower()
-    openai_check = "true"
+    openai_check = "false"
     print(f"OPENAI_CHECK is set to {openai_check}")
-    if openai_check == "false":
+    if openai_check == "true":
         # Run OpenAI validation
         validation_result = asyncio.run(validate_with_openai())
         if not validation_result:

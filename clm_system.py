@@ -51,12 +51,14 @@ class APIGateway:
 
 class EventHub:
     async def publish(self, event: Dict[str, Any]) -> None:
-        # Simulate publishing an event to the event hub
-        try:
-            print(f"Event published: {event}")
-        except Exception as e:
-            # Handle publishing failure
-            print(f"Failed to publish event: {e}")
+        # Simulate publishing an event to the event hub with retry logic
+        for attempt in range(3):  # Retry up to 3 times
+            try:
+                print(f"Event published: {event}")
+                return
+            except Exception as e:
+                print(f"Failed to publish event on attempt {attempt + 1}: {e}")
+                await asyncio.sleep(1)  # Wait 1 second before retrying
 
 class IdentityProvider:
     def authenticate(self, auth_token: str) -> str:
@@ -91,15 +93,23 @@ class MessageTranslator:
         return message
 
 class SchemaValidator:
+    def __init__(self):
+        # Simulate loading dynamic schema versions
+        self.schemas = {
+            "1.0.0": ['customer_id', 'event_id', 'version', 'type', 'data'],
+            # Add more schemas as needed
+        }
+
     def validate(self, event: Dict[str, Any]) -> bool:
-        # Simulate enhanced schema validation
-        required_fields = ['customer_id', 'event_id', 'version', 'type', 'data']
+        version = event.get('version')
+        if version not in self.schemas:
+            return False
+        required_fields = self.schemas[version]
         for field in required_fields:
             if field not in event:
                 return False
-        if event.get('version') != "1.0.0":
-            return False
         return True
+
 
 # Simulated in-memory databases for customer state and events
 customer_db = {
@@ -218,8 +228,8 @@ async def main():
             'customer_id': '12345',
             'name': 'John Doe',
             'email': 'john.doe@example.com',
-            'authorized_to_trade': True,  # Adding this field to simulate authorization ok ok
-            'complies_with_standards': True  # Adding this field to simulate standards compliance #
+            'authorized_to_trade': True,  # Adding this field to simulate authorization
+            'complies_with_standards': True  # Adding this field to simulate standards compliance
         }
     }
 

@@ -208,7 +208,7 @@ class CLMSystem:
         # Simulate high-availability setup
         print("Setting up high-availability infrastructure...")
         # Possible implementation detail additions:
-        print("Clustering, load balancing, and fail-over mechanisms enabled.")
+        print("Clustering, load balancing, and fail-over mechanisms   #enabled.")
         print("Ensuring data backups, recovery plans, and geographical redundancy where applicable.")
         print("Service degradation and fallback/failover options in place.")
         print("Resiliency against intermittent and transient connectivity issues ensured.")

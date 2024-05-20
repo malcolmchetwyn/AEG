@@ -67,20 +67,25 @@ class IdentityProvider:
         return "user_id" if auth_token == "valid-token" else None
 
 class DataEnrichmentService:
-    def enrich(self, customer_data: Dict[str, Any]) -> Dict[str, Any]:
-        # Simulate data enrichment process #
-        customer_data["enriched"] = True
-        # Check for adherence to open standards or existing contracts (simplified example) #
-        if not customer_data.get("complies_with_standards"):
-            customer_data["complies_with_standards"] = True  # Assume compliance for the example
-        return customer_data
+    async def enrich(self, customer_data: Dict[str, Any]) -> Dict[str, Any]:
+        # Simulate data enrichment process with retries and exception handling
+        for attempt in range(3):
+            try:
+                customer_data["enriched"] = True
+                # Check for adherence to open standards or existing contracts (simplified example)
+                if not customer_data.get("complies_with_standards"):
+                    customer_data["complies_with_standards"] = True  # Assume compliance for the example
+                return customer_data
+            except Exception as e:
+                print(f"Failed to enrich data on attempt {attempt + 1}: {e}")
+                await asyncio.sleep(1)  # Wait 1 second before retrying
+        raise Exception("Data enrichment failed after multiple attempts")
 
 class BusinessRulesEngine:
     def apply_compliance_rules(self, customer_data: Dict[str, Any]) -> bool:
-        # Simulate applying compliance rules #
-        # Assume compliance rules are met if the customer's name is not empty 
+        # Simulate applying compliance rules
+        # Assume compliance rules are met if the customer's name is not empty
         return bool(customer_data.get("name"))
-    
 
 class MessageTranslator:
     def translate(self, message: Dict[str, Any], format_type: str) -> Dict[str, Any]:
@@ -110,6 +115,15 @@ class SchemaValidator:
                 return False
         return True
 
+    def validate_with_error(self, event: Dict[str, Any]) -> Dict[str, Any]:
+        version = event.get('version')
+        if version not in self.schemas:
+            return {"status": "error", "message": f"Unsupported schema version: {version}"}
+        required_fields = self.schemas[version]
+        for field in required_fields:
+            if field not in event:
+                return {"status": "error", "message": f"Missing required field: {field}"}
+        return {"status": "success"}
 
 # Simulated in-memory databases for customer state and events
 customer_db = {
@@ -140,8 +154,9 @@ class CLMSystem:
         event['customer_id'] = customer_id
         event['event_id'] = str(uuid.uuid4())
         event['version'] = "1.0.0"  # Add versioning information
-        if not self.schema_validator.validate(event):
-            return None, {"error": "Event schema validation failed"}
+        validation_result = self.schema_validator.validate_with_error(event)
+        if validation_result['status'] == 'error':
+            return None, validation_result
         event_store.append(event)
         await self.event_hub.publish(event)
         return event
@@ -152,10 +167,10 @@ class CLMSystem:
         # CLM-GUARDRAIL-04: Data Enrichment
         # GRP-GUARDRAIL-03: Customer Master Data Management
         # Enrich customer data
-        enriched_data = self.data_enrichment_service.enrich(customer_data)
+        enriched_data = await self.data_enrichment_service.enrich(customer_data)
 
         # Verify that the customer is authorized to trade
-        if not self.is_authorized_to_trade(enriched_data):
+        if not await self.is_authorized_to_trade(enriched_data):
             return None, {"error": "Customer not authorized to trade"}
 
         # Apply compliance rules
@@ -171,9 +186,15 @@ class CLMSystem:
         )
         return customer_id, event
 
-    def is_authorized_to_trade(self, customer_data: Dict[str, Any]) -> bool:
+    async def is_authorized_to_trade(self, customer_data: Dict[str, Any]) -> bool:
         # Query the authoritative data source for authorization state
         customer_id = customer_data.get("customer_id")
+        # Simulate querying an actual authoritative source
+        return await self.query_authoritative_source(customer_id)
+
+    async def query_authoritative_source(self, customer_id: str) -> bool:
+        # Simulate an async query to the authoritative data source
+        await asyncio.sleep(0.1)  # Simulate network delay
         return customer_db.get(customer_id, {}).get("authorized_to_trade", False)
 
     async def process_api_request(self, request: Dict[str, Any]):
@@ -207,8 +228,8 @@ class CLMSystem:
         """
         # Simulate high-availability setup
         print("Setting up high-availability infrastructure...")
-        # Possible implementation detail additions:
-        print("Clustering, load balancing, and fail-over mechanisms   #enabled.")
+        # Implementing high availability mechanisms
+        print("Clustering, load balancing, and fail-over mechanisms enabled.")
         print("Ensuring data backups, recovery plans, and geographical redundancy where applicable.")
         print("Service degradation and fallback/failover options in place.")
         print("Resiliency against intermittent and transient connectivity issues ensured.")

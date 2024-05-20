@@ -218,7 +218,7 @@ async def main():
             'name': 'John Doe',
             'email': 'john.doe@example.com',
             'authorized_to_trade': True,  # Adding this field to simulate authorization
-            'complies_with_standards': True  # Adding this field to simulate standards compliance
+            'complies_with_standards': True  # Adding this field to simulate standards compliance  
         }
     }
 

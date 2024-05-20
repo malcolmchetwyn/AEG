@@ -52,7 +52,11 @@ class APIGateway:
 class EventHub:
     async def publish(self, event: Dict[str, Any]) -> None:
         # Simulate publishing an event to the event hub
-        print(f"Event published: {event}")
+        try:
+            print(f"Event published: {event}")
+        except Exception as e:
+            # Handle publishing failure
+            print(f"Failed to publish event: {e}")
 
 class IdentityProvider:
     def authenticate(self, auth_token: str) -> str:
@@ -74,9 +78,6 @@ class BusinessRulesEngine:
         # Simulate applying compliance rules #
         # Assume compliance rules are met if the customer's name is not empty 
         return bool(customer_data.get("name"))
-     
-        # Break the guardrail by always returning True without actual rule checks
-        #return True
 
 class MessageTranslator:
     def translate(self, message: Dict[str, Any], format_type: str) -> Dict[str, Any]:
@@ -90,11 +91,25 @@ class MessageTranslator:
 
 class SchemaValidator:
     def validate(self, event: Dict[str, Any]) -> bool:
-        # Simulate schema validation
-        return event.get("version") == "1.0.0"
+        # Simulate enhanced schema validation
+        required_fields = ['customer_id', 'event_id', 'version', 'type', 'data']
+        for field in required_fields:
+            if field not in event:
+                return False
+        if event.get('version') != "1.0.0":
+            return False
+        return True
 
 # Simulated in-memory databases for customer state and events
-customer_db = {}
+customer_db = {
+    '12345': {
+        'customer_id': '12345',
+        'name': 'John Doe',
+        'email': 'john.doe@example.com',
+        'authorized_to_trade': True,
+        'complies_with_standards': True
+    }
+}
 event_store = []
 
 # Guardrails and patterns implementation
@@ -146,8 +161,9 @@ class CLMSystem:
         return customer_id, event
 
     def is_authorized_to_trade(self, customer_data: Dict[str, Any]) -> bool:
-        # Simulate checking persistent record for authorization state
-        return customer_data.get("authorized_to_trade", False)
+        # Query the authoritative data source for authorization state
+        customer_id = customer_data.get("customer_id")
+        return customer_db.get(customer_id, {}).get("authorized_to_trade", False)
 
     async def process_api_request(self, request: Dict[str, Any]):
         # GRP-PATTERN-01: API Gateway
@@ -207,6 +223,7 @@ async def main():
     }
 
     response = await clm_system.process_api_request(api_request)
+    print(response)
 
 # Run the main function
 asyncio.run(main())

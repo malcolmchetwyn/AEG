@@ -88,6 +88,7 @@ if __name__ == "__main__":
 
     # Check if OPENAI_CHECK environment variable is set to "true"
     openai_check = os.getenv("OPENAI_CHECK", "true").lower()
+    openai_check = True
     print(f"OPENAI_CHECK is set to {openai_check}")
     if openai_check == "true":
         # Run OpenAI validation
